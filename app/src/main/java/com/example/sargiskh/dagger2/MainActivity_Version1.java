@@ -1,27 +1,19 @@
 package com.example.sargiskh.dagger2;
 
-import android.content.Context;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 
-import com.example.sargiskh.dagger2.advanced.component.DaggerRandomUserComponent;
-import com.example.sargiskh.dagger2.advanced.component.RandomUserComponent;
-import com.example.sargiskh.dagger2.advanced.module.ContextModule;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.example.sargiskh.dagger2.advanced.adapter.RandomUserAdapter;
 import com.example.sargiskh.dagger2.advanced.interfaces.RandomUsersApi;
 import com.example.sargiskh.dagger2.advanced.model.RandomUsers;
-import com.squareup.picasso.OkHttp3Downloader;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.squareup.picasso.Picasso;
 
-import java.io.File;
-
-import okhttp3.Cache;
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Call;
@@ -31,31 +23,17 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 import timber.log.Timber;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity_Version1 extends AppCompatActivity {
 
     Retrofit retrofit;
     RecyclerView recyclerView;
     RandomUserAdapter mAdapter;
-
-//    Context context;
-    RandomUsersApi randomUsersApi;
-    Picasso picasso;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         initViews();
-//        context = this;
-
-//        beforeDagger2();
-        afterDagger2();
-
-        populateUsers();
-
-    }
-
-    private void beforeDagger2() {
 
         GsonBuilder gsonBuilder = new GsonBuilder();
         Gson gson = gsonBuilder.create();
@@ -72,24 +50,10 @@ public class MainActivity extends AppCompatActivity {
 
         httpLoggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
 
-        // --> start - version_2
-        File cacheFile = new File(this.getCacheDir(), "HttpCache");
-        cacheFile.mkdirs();
-
-        Cache cache = new Cache(cacheFile, 10 * 1000 * 1000); //10 MB
-        // <-- end - version_2
-
         OkHttpClient okHttpClient = new OkHttpClient()
                 .newBuilder()
-                .cache(cache) // version_2
                 .addInterceptor(httpLoggingInterceptor)
                 .build();
-
-        // --> start - version_2
-        OkHttp3Downloader okHttpDownloader = new OkHttp3Downloader(okHttpClient);
-
-        picasso = new Picasso.Builder(this).downloader(okHttpDownloader).build();
-        // <-- end - version_2
 
         retrofit = new Retrofit.Builder()
                 .client(okHttpClient)
@@ -97,13 +61,8 @@ public class MainActivity extends AppCompatActivity {
                 .addConverterFactory(GsonConverterFactory.create(gson))
                 .build();
 
-    }
+        populateUsers();
 
-    private void afterDagger2() {
-        RandomUserComponent daggerRandomUserComponent = DaggerRandomUserComponent.builder().contextModule(new ContextModule(this)).build();
-
-        picasso = daggerRandomUserComponent.getPicasso();
-        randomUsersApi = daggerRandomUserComponent.getRandomUsersService();
     }
 
     private void initViews() {
@@ -118,7 +77,7 @@ public class MainActivity extends AppCompatActivity {
             public void onResponse(Call<RandomUsers> call, @NonNull Response<RandomUsers> response) {
                 if(response.isSuccessful()) {
                     Log.e("LOG_TAG", "response.isSuccessful");
-                    mAdapter = new RandomUserAdapter(picasso);
+                    mAdapter = new RandomUserAdapter(Picasso.get());//TODO - Will not work
                     mAdapter.setItems(response.body().getResults());
                     recyclerView.setAdapter(mAdapter);
                 } else {
@@ -135,8 +94,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public RandomUsersApi getRandomUserService(){
-//        return retrofit.create(RandomUsersApi.class); // Before Dagger2
-        return randomUsersApi; // After Dagger2
+        return retrofit.create(RandomUsersApi.class);
     }
 
 }
