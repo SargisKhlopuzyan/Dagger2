@@ -24,6 +24,8 @@ import com.squareup.picasso.Picasso;
 
 import java.io.File;
 
+import javax.inject.Inject;
+
 import okhttp3.Cache;
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
@@ -38,10 +40,13 @@ public class MainActivity extends AppCompatActivity {
 
     Retrofit retrofit;
     RecyclerView recyclerView;
+
+    @Inject
     RandomUserAdapter mAdapter;
 
-//    Context context;
+    @Inject
     RandomUsersApi randomUsersApi;
+
     Picasso picasso;
 
     @Override
@@ -49,20 +54,34 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         initViews();
-//        context = this;
-
 //        beforeDagger2();
 //        afterDagger2();
+        afterActivityLevelComponent();
+        populateUsers();
+    }
+
+    private void afterActivityLevelComponent() {
+        MainActivityComponent mainActivityComponent = DaggerMainActivityComponent.builder()
+                .mainActivityModule(new MainActivityModule(this))
+                .randomUserComponent(RandomUserApplication.get(this).getRandomUserComponent())
+                .build();
+        mainActivityComponent.injectMainActivity(this);
+    }
+
+    private void afterDagger2() {
+        RandomUserComponent daggerRandomUserComponent = DaggerRandomUserComponent.builder().contextModule(new ContextModule(this)).build();
+
+        picasso = daggerRandomUserComponent.getPicasso();
+        randomUsersApi = daggerRandomUserComponent.getRandomUsersService();
 
         MainActivityComponent mainActivityComponent = DaggerMainActivityComponent.builder()
                 .mainActivityModule(new MainActivityModule(this))
                 .randomUserComponent(RandomUserApplication.get(this).getRandomUserComponent())
                 .build();
-        randomUsersApi = mainActivityComponent.getRandomUsersService();
-        mAdapter = mainActivityComponent.getRandomUserAdapter();
 
-        populateUsers();
 
+//        randomUsersApi = mainActivityComponent.getRandomUsersService();
+//        mAdapter = mainActivityComponent.getRandomUserAdapter();
     }
 
     private void beforeDagger2() {
@@ -106,14 +125,6 @@ public class MainActivity extends AppCompatActivity {
                 .baseUrl("https://randomuser.me/")
                 .addConverterFactory(GsonConverterFactory.create(gson))
                 .build();
-
-    }
-
-    private void afterDagger2() {
-        RandomUserComponent daggerRandomUserComponent = DaggerRandomUserComponent.builder().contextModule(new ContextModule(this)).build();
-
-        picasso = daggerRandomUserComponent.getPicasso();
-        randomUsersApi = daggerRandomUserComponent.getRandomUsersService();
     }
 
     private void initViews() {
