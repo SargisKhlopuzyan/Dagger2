@@ -1,6 +1,6 @@
 package com.example.sargiskh.dagger2.advanced.module;
 
-import com.example.sargiskh.dagger2.advanced.interfaces.RandomUserApplicationScope;
+import com.example.sargiskh.dagger2.advanced.annotation.RandomUserApplicationScope;
 import com.example.sargiskh.dagger2.advanced.interfaces.RandomUsersApi;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;

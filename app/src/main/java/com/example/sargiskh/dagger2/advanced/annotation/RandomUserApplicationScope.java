@@ -1,4 +1,4 @@
-package com.example.sargiskh.dagger2.advanced.interfaces;
+package com.example.sargiskh.dagger2.advanced.annotation;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

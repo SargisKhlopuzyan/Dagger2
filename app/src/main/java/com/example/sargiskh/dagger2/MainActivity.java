@@ -1,6 +1,5 @@
 package com.example.sargiskh.dagger2;
 
-import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -8,6 +7,10 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 
+import com.example.sargiskh.dagger2.advanced.MainActivityFeature.DaggerMainActivityComponent;
+import com.example.sargiskh.dagger2.advanced.MainActivityFeature.MainActivityComponent;
+import com.example.sargiskh.dagger2.advanced.MainActivityFeature.MainActivityModule;
+import com.example.sargiskh.dagger2.advanced.application.RandomUserApplication;
 import com.example.sargiskh.dagger2.advanced.component.DaggerRandomUserComponent;
 import com.example.sargiskh.dagger2.advanced.component.RandomUserComponent;
 import com.example.sargiskh.dagger2.advanced.module.ContextModule;
@@ -49,7 +52,14 @@ public class MainActivity extends AppCompatActivity {
 //        context = this;
 
 //        beforeDagger2();
-        afterDagger2();
+//        afterDagger2();
+
+        MainActivityComponent mainActivityComponent = DaggerMainActivityComponent.builder()
+                .mainActivityModule(new MainActivityModule(this))
+                .randomUserComponent(RandomUserApplication.get(this).getRandomUserComponent())
+                .build();
+        randomUsersApi = mainActivityComponent.getRandomUsersService();
+        mAdapter = mainActivityComponent.getRandomUserAdapter();
 
         populateUsers();
 
